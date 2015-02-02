@@ -1,0 +1,6 @@
+QUESTION: What critical databases need to be backed up?
+Answer :- 
+Cloud Controller Database
+UAA Database
+Apps Manager Database
+The NFS Server
