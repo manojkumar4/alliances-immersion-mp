@@ -56,10 +56,8 @@ The following overview will be applied throughout the exercises.
 . Review the link:http://docs.cloudfoundry.org/bosh/bosh-components.html[Bosh Components] documentation
 
 . QUESTION: What bosh component is responsible for recreating a failed VM?
-  Answer :- Resurrector
-. QUESTION: Where did you enable this component in Ops Manager?
-  Answer :- 
-  Ops Manager Director for vSphere -> Director Config -> Enable VM Resurrector Plugin
+
+. QUESTION: Where did you enable this component in Ops Manager?  
 
 ==== Using Bosh
 
