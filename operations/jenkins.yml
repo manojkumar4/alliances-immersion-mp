@@ -1,0 +1,232 @@
+---
+name: p-jenkins-75fe05db16346336deeb
+director_uuid: 2cf451f2-d8c4-4f28-aea6-4ee1078353ff
+releases:
+- name: jenkins
+  version: 263
+networks:
+- name: default
+  subnets:
+  - range: 192.168.5.0/24
+    gateway: 192.168.5.1
+    dns:
+    - 192.168.5.4
+    - 8.8.8.8
+    static:
+    - 192.168.5.6
+    - 192.168.5.7
+    reserved:
+    - 192.168.5.2-192.168.5.5
+    - 192.168.5.14-192.168.5.254
+    cloud_properties:
+      name: LAN
+resource_pools:
+- name: jenkins_master-partition-b106d09744fcda6071e3
+  stemcell:
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
+    version: '2690.3'
+  network: default
+  cloud_properties:
+    ram: 2048
+    disk: 4096
+    cpu: 2
+    datacenters:
+    - clusters:
+      - PCF:
+          resource_pool: ''
+  env:
+    bosh:
+      password: "$6$f586192d5df1c5a3$YbDJDvRKSI90z/Rc7Mr09lF/gydBjGnH6KpPLb6FDfvCbDmmz/vQG.984kD0RV8fiuNjqPb4d9KN7fUBf0UTx."
+- name: jenkins_slave-partition-b106d09744fcda6071e3
+  stemcell:
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
+    version: '2690.3'
+  network: default
+  cloud_properties:
+    ram: 2048
+    disk: 8192
+    cpu: 2
+    datacenters:
+    - clusters:
+      - PCF:
+          resource_pool: ''
+  env:
+    bosh:
+      password: "$6$6a709c2fa5710908$eiNbtVeXADXomingAoaiumWd5.7KazmVqn.xtLSYfyKaTxVW.sm.eUBd3dKDUubSPeav.sXbqsXVUT5QyMUgo0"
+- name: jenkins_cf_bootstrap
+  stemcell:
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
+    version: '2690.3'
+  network: default
+  cloud_properties:
+    ram: 1024
+    disk: 2048
+    cpu: 1
+    datacenters:
+    - clusters:
+      - PCF:
+          resource_pool: ''
+  env:
+    bosh:
+      password: "$6$d950d8b49bf0a5ec$UA9CRpfhdJOs7Q2HTzQEytvoHO2vikbTzC3r.sZxpctZaLzyQt4YgJl.5VML1Vz4zv5VZofgVZdi.RPkPdbcU0"
+- name: jenkins_cf_unbootstrap
+  stemcell:
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
+    version: '2690.3'
+  network: default
+  cloud_properties:
+    ram: 1024
+    disk: 2048
+    cpu: 1
+    datacenters:
+    - clusters:
+      - PCF:
+          resource_pool: ''
+  env:
+    bosh:
+      password: "$6$89216562f0aacacd$y7lB6JPANIM8S.eZzAGkJU/MjOdrDfluo7UrYhhn92sUeyiFwbeaJOMp4cSpnePLtT.xLaq51fi2phbl7wfx6/"
+compilation:
+  workers: 2
+  network: default
+  cloud_properties:
+    ram: 1024
+    disk: 8192
+    cpu: 2
+update:
+  canaries: 1
+  canary_watch_time: 30000-300000
+  update_watch_time: 30000-300000
+  max_in_flight: 1
+  max_errors: 2
+  serial: true
+jobs:
+- name: jenkins_master-partition-b106d09744fcda6071e3
+  template: jenkins_master
+  release: jenkins
+  lifecycle: service
+  instances: 1
+  resource_pool: jenkins_master-partition-b106d09744fcda6071e3
+  persistent_disk: 8192
+  networks:
+  - name: default
+    default:
+    - dns
+    - gateway
+    static_ips:
+    - 192.168.5.6
+  properties:
+    jenkins:
+      license:
+        name: wangzhen@ge.com
+        email: wangzhen@ge.com
+        organization: GE
+      jvm_args: "-XX:MaxPermSize=128m"
+      slave:
+        ips:
+        - 192.168.5.7
+      ssl:
+        pem: 
+        enable: false
+      network: default
+    cf:
+      domain: 209.236.122.169.xip.io
+      admin_username: admin
+      admin_password: cc1a9b161e3ada569716
+      nats:
+        host: 192.168.5.14
+        port: 4222
+        username: nats
+        password: aff1b9ea4d10186c80a2
+    uaa:
+      client_id: jenkins
+      client_secret: bf876136b32c54f1c26f
+      admin_client_id: admin
+      admin_client_secret: b3d83e3568a5fc5c97ef
+    syslog_aggregator:
+      address: 
+      port: 
+      all: true
+  update:
+    max_in_flight: 1
+- name: jenkins_slave-partition-b106d09744fcda6071e3
+  template:
+  - jenkins_slave
+  - docker
+  release: jenkins
+  lifecycle: service
+  instances: 1
+  resource_pool: jenkins_slave-partition-b106d09744fcda6071e3
+  persistent_disk: 8192
+  networks:
+  - name: default
+    default:
+    - dns
+    - gateway
+    static_ips:
+    - 192.168.5.7
+  properties:
+    jenkins:
+      master:
+        ips:
+        - 192.168.5.6
+    cf:
+      domain: 209.236.122.169.xip.io
+      jenkins_username: cf_jenkins_user
+      jenkins_password: 4794ee5441e5f379
+      jenkins_test_org: jenkins-test-org
+  update:
+    max_in_flight: 1
+- name: jenkins_cf_bootstrap
+  template: jenkins_cf_bootstrap
+  release: jenkins
+  lifecycle: errand
+  instances: 1
+  resource_pool: jenkins_cf_bootstrap
+  persistent_disk: 0
+  networks:
+  - name: default
+    default:
+    - dns
+    - gateway
+  properties:
+    cf:
+      domain: 209.236.122.169.xip.io
+      admin_username: admin
+      admin_password: cc1a9b161e3ada569716
+      jenkins_username: cf_jenkins_user
+      jenkins_password: 4794ee5441e5f379
+      jenkins_test_org: jenkins-test-org
+    uaa:
+      client_id: jenkins
+      client_secret: bf876136b32c54f1c26f
+      admin_client_id: admin
+      admin_client_secret: b3d83e3568a5fc5c97ef
+  update:
+    max_in_flight: 1
+- name: jenkins_cf_unbootstrap
+  template: jenkins_cf_unbootstrap
+  release: jenkins
+  lifecycle: errand
+  instances: 1
+  resource_pool: jenkins_cf_unbootstrap
+  persistent_disk: 0
+  networks:
+  - name: default
+    default:
+    - dns
+    - gateway
+  properties:
+    cf:
+      domain: 209.236.122.169.xip.io
+      admin_username: admin
+      admin_password: cc1a9b161e3ada569716
+      jenkins_username: cf_jenkins_user
+      jenkins_password: 4794ee5441e5f379
+      jenkins_test_org: jenkins-test-org
+    uaa:
+      client_id: jenkins
+      client_secret: bf876136b32c54f1c26f
+      admin_client_id: admin
+      admin_client_secret: b3d83e3568a5fc5c97ef
+  update:
+    max_in_flight: 1
