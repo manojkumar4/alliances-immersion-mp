@@ -1,0 +1,19 @@
+[
+        {
+               "destination": "192.168.5.0/24",
+               "ports": "1-65535",
+               "protocol": "tcp"
+        }
+        ,
+        {
+                "destination": "209.236.122.169",
+                "ports": "80",
+                "protocol": "tcp"
+        }
+        ,
+        {
+                "destination": "69.27.44.162",
+                "ports": "443",
+                "protocol": "tcp"
+        }
+]
